@@ -1,489 +1,151 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Heart, 
-  MapPin, 
-  Calendar, 
-  Phone, 
-  Mail, 
-  ShieldAlert, 
-  ArrowRight, 
-  Award, 
-  BookOpen, 
-  Gift, 
-  Activity as ActIcon,
-  ChevronRight,
-  Info,
-  Clock,
-  Instagram,
-  Facebook,
-  Twitter,
-  ExternalLink,
-  Lock
-} from 'lucide-react';
-import { SarthakLogo, SarthakIntro } from './components/SarthakLogo';
-import { ActivityCard } from './components/ActivityCard';
-import { JoinModal, ContactModal } from './components/FormModals';
-import { AdminPortal } from './components/AdminPortal';
-import { getActivities, seedDatabaseIfEmpty, Activity } from './lib/firebase';
+import { Heart, MapPin, Phone, Mail, ArrowRight, Award, BookOpen, Gift } from 'lucide-react';
 
 export default function App() {
-  const [introCompleted, setIntroCompleted] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loadingActivities, setLoadingActivities] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [sarthakClickCount, setSarthakClickCount] = useState(0);
-
-  // Secret Admin Portal Trigger
-  const handleSarthakClick = () => {
-    setSarthakClickCount(prev => {
-      const next = prev + 1;
-      if (next >= 3) {
-        setShowAdmin(true);
-        return 0; // reset
-      }
-      return next;
-    });
-  };
-
-  // Modal Triggers
-  const [isJoinOpen, setIsJoinOpen] = useState(false);
-  const [isContactOpen, setIsContactOpen] = useState(false);
-
-  // Initialize and load activities
-  useEffect(() => {
-    async function initDb() {
-      setLoadingActivities(true);
-      try {
-        await seedDatabaseIfEmpty();
-        const data = await getActivities();
-        setActivities(data);
-      } catch (err) {
-        console.error("Error loading activities: ", err);
-      } finally {
-        setLoadingActivities(false);
-      }
-    }
-    
-    // Only fetch if intro completed or during setup
-    initDb();
-  }, [introCompleted, showAdmin]); // Reload if admin panel edits them
-
-  // Categories list derived from activities
-  const categories = ['All', 'Education', 'Food Relief', 'Healthcare', 'Livelihood'];
-
-  // Filtered activities list
-  const filteredActivities = activeFilter === 'All'
-    ? activities
-    : activities.filter(act => act.category === activeFilter);
-
-  // Scroll to helper
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const [introCompleted, setIntroCompleted] = useState(true);
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 flex flex-col font-sans selection:bg-pink-100 selection:text-rose-900">
+    <div className="min-h-screen bg-white text-gray-800 flex flex-col font-sans">
       
-      {/* 1. INTRO SPLASH ANIMATION */}
-      <AnimatePresence>
-        {!introCompleted && (
-          <SarthakIntro onComplete={() => setIntroCompleted(true)} />
-        )}
-      </AnimatePresence>
+      {/* HEADER */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 py-3.5 px-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
+            <div>
+              <h1 className="font-serif text-xl font-black tracking-widest text-gray-900">SARTHAK</h1>
+              <p className="font-sans text-[9px] uppercase tracking-wider text-gray-400 font-bold">NGO</p>
+            </div>
+          </div>
+          <button className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold">Join With Us</button>
+        </div>
+      </header>
 
-      {/* Render Main App once Intro finishes */}
-      {introCompleted && (
-        <AnimatePresence mode="wait">
-          
-          {/* 2. ADMIN PORTAL VIEW */}
-          {showAdmin ? (
-            <motion.div
-              key="admin"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <AdminPortal onBackToSite={() => setShowAdmin(false)} onActivitiesChange={(newActs) => setActivities(newActs)} />
-            </motion.div>
-          ) : (
-            
-            // 3. MAIN PUBLIC WEBSITE
-            <motion.div
-              key="website"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="flex flex-col min-h-screen"
-            >
-              {/* STICKY GLASSMORPHIC HEADER */}
-              <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 py-3.5 px-6 transition-all">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                  
-                  {/* Brand Logo & Name */}
-                  <div 
-                    className="flex items-center gap-3 cursor-pointer select-none" 
-                    onClick={() => {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                      handleSarthakClick();
-                    }}
-                  >
-                    <SarthakLogo className="w-10 h-10 flex items-center justify-center shrink-0 p-0 bg-transparent" />
-                    <div>
-                      <h1 className="font-serif text-xl font-black tracking-widest text-gray-900 flex items-center gap-1.5">
-                        SARTHAK
-                        <span className="text-[10px] bg-rose-50 text-rose-600 font-mono font-bold tracking-normal px-2 py-0.5 rounded-full uppercase">NGO</span>
-                      </h1>
-                      <p className="font-sans text-[9px] uppercase tracking-wider text-gray-400 font-bold">Give a hand, Change a life</p>
-                    </div>
-                  </div>
+      {/* HERO */}
+      <section className="relative bg-gradient-to-b from-pink-50 via-white to-white py-24 px-6">
+        <div className="max-w-7xl mx-auto text-center space-y-6">
+          <h2 className="font-serif text-5xl font-extrabold text-gray-900">Give a Hand, Change a Life</h2>
+          <p className="font-sans text-lg text-gray-600 max-w-2xl mx-auto">
+            SARTHAK is a grassroots non-profit organization supporting underserved communities with food drives, education, healthcare, and livelihood programs.
+          </p>
+          <div className="flex gap-4 justify-center pt-4">
+            <button className="px-8 py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-bold flex items-center gap-2">
+              Join Our Mission
+              <Heart className="w-4 h-4" />
+            </button>
+            <button className="px-8 py-4 bg-white border border-gray-200 text-gray-800 rounded-2xl font-bold flex items-center gap-2">
+              Contact Us
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
 
-                  {/* Nav links */}
-                  <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-600">
-                    <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-rose-600 cursor-pointer transition-colors">Home</button>
-                    <button onClick={() => scrollToSection('goal')} className="hover:text-rose-600 cursor-pointer transition-colors">Our Goal</button>
-                    <button onClick={() => scrollToSection('activities')} className="hover:text-rose-600 cursor-pointer transition-colors">Activities</button>
-                    <button onClick={() => setIsContactOpen(true)} className="hover:text-rose-600 cursor-pointer transition-colors">Contact Us</button>
-                  </nav>
+      {/* GOALS */}
+      <section className="py-20 px-6 bg-gray-50">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <div className="text-center">
+            <h3 className="font-serif text-4xl font-extrabold text-gray-900">Our Goal & Pillars</h3>
+            <p className="text-gray-600 mt-2">Four domains to create structural change</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <BookOpen className="w-8 h-8 text-rose-600 mb-3" />
+              <h4 className="font-bold text-gray-900 mb-2">Empowering Education</h4>
+              <p className="text-sm text-gray-600">Evening coaching modules and educational materials for children.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <Gift className="w-8 h-8 text-rose-600 mb-3" />
+              <h4 className="font-bold text-gray-900 mb-2">Nutritional Relief</h4>
+              <p className="text-sm text-gray-600">Hot nutritious meals to slums and marginalized communities.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <Award className="w-8 h-8 text-rose-600 mb-3" />
+              <h4 className="font-bold text-gray-900 mb-2">Vocational Training</h4>
+              <p className="text-sm text-gray-600">Women empowerment through certified skills programs.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <Heart className="w-8 h-8 text-rose-600 mb-3" />
+              <h4 className="font-bold text-gray-900 mb-2">Healthcare</h4>
+              <p className="text-sm text-gray-600">Free screening camps and diagnostic services for villages.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                  {/* Header Actions */}
-                  <div className="flex items-center gap-3">
-                    <button
-                      id="btn-nav-join"
-                      onClick={() => setIsJoinOpen(true)}
-                      className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-pink-150 hover:shadow-none transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      Join With Us
-                      <Heart className="w-3.5 h-3.5 fill-white" />
-                    </button>
-                  </div>
-                </div>
-              </header>
+      {/* ACTIVITIES */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-7xl mx-auto space-y-10">
+          <div>
+            <h3 className="font-serif text-4xl font-extrabold text-gray-900">Active Social Work</h3>
+            <p className="text-gray-600 mt-2">Community impact through direct action</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md">
+              <div className="h-40 bg-gray-200"></div>
+              <div className="p-6">
+                <h4 className="font-bold text-gray-900 mb-2">Education Program</h4>
+                <p className="text-sm text-gray-600">Supporting children with learning materials and coaching.</p>
+              </div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md">
+              <div className="h-40 bg-gray-200"></div>
+              <div className="p-6">
+                <h4 className="font-bold text-gray-900 mb-2">Food Drives</h4>
+                <p className="text-sm text-gray-600">Distributing nutritious meals to underserved areas.</p>
+              </div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md">
+              <div className="h-40 bg-gray-200"></div>
+              <div className="p-6">
+                <h4 className="font-bold text-gray-900 mb-2">Healthcare Camps</h4>
+                <p className="text-sm text-gray-600">Free medical screening and diagnostic services.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              {/* 3.1 HERO SECTION WITH LOGO EXPOSURE */}
-              <section className="relative overflow-hidden bg-gradient-to-b from-pink-50/40 via-white to-white py-16 md:py-24 px-6">
-                
-                {/* Decorative background orbs */}
-                <div className="absolute top-10 left-10 w-80 h-80 bg-rose-100 rounded-full blur-3xl opacity-40 -z-10" />
-                <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-100 rounded-full blur-3xl opacity-30 -z-10" />
+      {/* CTA */}
+      <section className="py-20 px-6 bg-gray-900 text-white">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <h3 className="font-serif text-4xl font-extrabold">Become a Pillar of Change</h3>
+          <p className="text-gray-300">Your skills and passion can directly empower families and communities.</p>
+          <div className="flex gap-4 justify-center">
+            <button className="px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold">Join as Volunteer</button>
+            <button className="px-8 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-bold border border-gray-700">Contact Us</button>
+          </div>
+        </div>
+      </section>
 
-                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                  
-                  {/* Left Column Text details */}
-                  <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-                    <motion.div
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="inline-flex items-center gap-2 bg-pink-50 border border-pink-100 text-rose-700 px-4 py-1.5 rounded-full text-xs font-semibold"
-                    >
-                      <Award className="w-3.5 h-3.5 text-rose-600" />
-                      <span>Dedicated to Social Empowerment since 2025</span>
-                    </motion.div>
-
-                    <motion.h2
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight"
-                    >
-                      Give a <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500">Hand</span>,<br />
-                      Change a <span className="text-gray-900">Life</span>.
-                    </motion.h2>
-
-                    <motion.p
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="font-sans text-base md:text-lg text-gray-650 leading-relaxed max-w-2xl mx-auto lg:mx-0"
-                    >
-                      SARTHAK is a grassroots non-profit organization striving to construct self-reliant, dignity-filled futures. We support underserved communities with food drives, primary education, healthcare camps, and professional skill certifications.
-                    </motion.p>
-
-                    {/* CTAs */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4"
-                    >
-                      <button
-                        id="btn-hero-join"
-                        onClick={() => setIsJoinOpen(true)}
-                        className="px-8 py-4 bg-rose-600 hover:bg-rose-700 text-white font-sans text-sm font-bold rounded-2xl cursor-pointer shadow-lg shadow-pink-150 hover:shadow-none hover:translate-y-0.5 transition-all flex items-center gap-2"
-                      >
-                        Join Our Mission
-                        <Heart className="w-4 h-4 fill-white text-white" />
-                      </button>
-                      
-                      <button
-                        id="btn-hero-contact"
-                        onClick={() => setIsContactOpen(true)}
-                        className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-800 font-sans text-sm font-bold rounded-2xl cursor-pointer border border-gray-200 hover:border-gray-300 hover:translate-y-0.5 transition-all flex items-center gap-2"
-                      >
-                        Contact & Support
-                        <ArrowRight className="w-4 h-4 text-rose-500" />
-                      </button>
-                    </motion.div>
-                  </div>
-
-                  {/* Right Column Impact & Statistics Display (Aesthetics & Transparency First) */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 50, delay: 0.25 }}
-                    className="lg:col-span-5 flex justify-center"
-                  >
-                    <div className="relative bg-gradient-to-tr from-rose-50/50 via-white to-pink-50/30 p-8 rounded-[32px] border border-gray-100 shadow-xl shadow-gray-150/40 max-w-[420px] w-full space-y-6">
-                      
-                      {/* Header in Card */}
-                      <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                        <div>
-                          <p className="text-[10px] font-mono font-bold text-rose-600 uppercase tracking-widest">Our Direct Impact</p>
-                          <h4 className="font-serif text-lg font-extrabold text-gray-950">Empowering Communities</h4>
-                        </div>
-                      </div>
-
-                      {/* Stats grid */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white p-4.5 rounded-2xl border border-gray-50 shadow-sm flex flex-col justify-between">
-                          <span className="text-3xl font-extrabold text-gray-900 tracking-tight">1,500+</span>
-                          <span className="text-[11px] text-gray-500 font-medium mt-1">Children Supported with Educational Materials</span>
-                        </div>
-                        
-                        <div className="bg-white p-4.5 rounded-2xl border border-gray-50 shadow-sm flex flex-col justify-between">
-                          <span className="text-3xl font-extrabold text-[#de5678] tracking-tight">50k+</span>
-                          <span className="text-[11px] text-gray-500 font-medium mt-1">Freshly Cooked Nutritional Meals Served</span>
-                        </div>
-
-                        <div className="bg-white p-4.5 rounded-2xl border border-gray-50 shadow-sm flex flex-col justify-between">
-                          <span className="text-3xl font-extrabold text-gray-900 tracking-tight">120+</span>
-                          <span className="text-[11px] text-gray-500 font-medium mt-1">Healthcare Camps & Diagnostics Hosted</span>
-                        </div>
-
-                        <div className="bg-white p-4.5 rounded-2xl border border-gray-50 shadow-sm flex flex-col justify-between">
-                          <span className="text-3xl font-extrabold text-[#de5678] tracking-tight">400+</span>
-                          <span className="text-[11px] text-gray-500 font-medium mt-1">Certified Women in Vocational Skills</span>
-                        </div>
-                      </div>
-
-                    </div>
-                  </motion.div>
-
-                </div>
-              </section>
-
-              {/* 3.2 OUR GOAL / PILLARS SECTION */}
-              <section id="goal" className="py-20 px-6 bg-gray-50 border-y border-gray-100">
-                <div className="max-w-7xl mx-auto space-y-12">
-                  
-                  {/* Section Title */}
-                  <div className="text-center max-w-2xl mx-auto space-y-3">
-                    <span className="font-mono text-xs uppercase tracking-widest text-rose-600 font-extrabold">Primary Vision</span>
-                    <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Our Goal & Central Pillars</h3>
-                    <p className="font-sans text-sm text-gray-500 leading-relaxed">
-                      We operate across four cohesive domains to address local marginalization comprehensively, making a structural difference.
-                    </p>
-                  </div>
-
-                  {/* Pillars Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Pillar 1 */}
-                    <div className="bg-white p-6.5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center mb-5 border border-pink-100">
-                        <BookOpen className="w-6 h-6" />
-                      </div>
-                      <h4 className="font-sans text-lg font-bold text-gray-900 mb-2">Empowering Education</h4>
-                      <p className="font-sans text-xs text-gray-500 leading-relaxed">
-                        Setting up localized evening coaching modules, distributing educational materials, books, bags, and assisting children with primary skills.
-                      </p>
-                    </div>
-
-                    {/* Pillar 2 */}
-                    <div className="bg-white p-6.5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center mb-5 border border-pink-100">
-                        <Gift className="w-6 h-6" />
-                      </div>
-                      <h4 className="font-sans text-lg font-bold text-gray-900 mb-2">Nutritional Relief</h4>
-                      <p className="font-sans text-xs text-gray-500 leading-relaxed">
-                        No individual should go to sleep hungry. We serve hot nutritious meals and fresh rations to slums and marginalized communities.
-                      </p>
-                    </div>
-
-                    {/* Pillar 3 */}
-                    <div className="bg-white p-6.5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center mb-5 border border-pink-100">
-                        <Award className="w-6 h-6" />
-                      </div>
-                      <h4 className="font-sans text-lg font-bold text-gray-900 mb-2">Vocational Training</h4>
-                      <p className="font-sans text-xs text-gray-500 leading-relaxed">
-                        Supporting women towards self-sufficiency through Certified sewing, apparel making, embroidery and business mentoring.
-                      </p>
-                    </div>
-
-                    {/* Pillar 4 */}
-                    <div className="bg-white p-6.5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center mb-5 border border-pink-100">
-                        <ActIcon className="w-6 h-6" />
-                      </div>
-                      <h4 className="font-sans text-lg font-bold text-gray-900 mb-2">Primary Healthcare</h4>
-                      <p className="font-sans text-xs text-gray-500 leading-relaxed">
-                        Bringing free general screening camps, dental reviews, basic eye testing, and distributed diagnostic medicines to nearby villages.
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
-              </section>
-
-              {/* 3.3 ACTIVITIES SECTION WITH FILTERS */}
-              <section id="activities" className="py-20 px-6 bg-white">
-                <div className="max-w-7xl mx-auto space-y-10">
-                  
-                  {/* Section Title */}
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
-                    <div className="space-y-2">
-                      <span className="font-mono text-xs uppercase tracking-widest text-rose-600 font-extrabold">Our Footprint</span>
-                      <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Active Social Work</h3>
-                      <p className="font-sans text-sm text-gray-500 max-w-xl">
-                        See how we support communities. Click 'Read More' on any activity to view detail diaries, coordinates, and statistics.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Activities Cards Grid */}
-                  {loadingActivities ? (
-                    <div className="h-64 flex flex-col items-center justify-center text-gray-400">
-                      <div className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                      <p className="text-xs font-mono uppercase tracking-widest">Loading activities...</p>
-                    </div>
-                  ) : activities.length === 0 ? (
-                    <div className="bg-gray-50 p-16 text-center rounded-2xl text-gray-400 border border-gray-100">
-                      No activities recorded yet. Registered administrators can add entries dynamically.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {activities.map((act) => (
-                        <ActivityCard key={act.id} activity={act} />
-                      ))}
-                    </div>
-                  )}
-
-                </div>
-              </section>
-
-              {/* 3.4 JOIN CTAs SECTION */}
-              <section className="py-20 px-6 bg-gradient-to-t from-pink-50/40 via-white to-white border-t border-gray-150">
-                <div className="max-w-4xl mx-auto bg-gray-900 rounded-3xl p-8 md:p-12 text-center text-white relative overflow-hidden shadow-2xl">
-                  
-                  {/* Decorative ambient background bird light inside card */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-pink-600 rounded-full blur-3xl opacity-20 -z-0" />
-                  
-                  <div className="relative z-10 space-y-6">
-                    <Heart className="w-12 h-12 fill-rose-600 text-rose-600 mx-auto animate-pulse" />
-                    
-                    <h3 className="font-serif text-3xl sm:text-4xl font-extrabold tracking-tight">Become a Pillar of Change</h3>
-                    <p className="font-sans text-sm text-gray-300 max-w-xl mx-auto leading-relaxed">
-                      Your skills, guidance, and passion can directly empower families and children. Submit your credentials, and let us co-create futures together.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
-                      <button
-                        id="btn-bottom-join"
-                        onClick={() => setIsJoinOpen(true)}
-                        className="w-full sm:w-auto px-8 py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-sans text-sm font-bold rounded-xl cursor-pointer shadow-md transition-all flex items-center justify-center gap-2"
-                      >
-                        Join as a Volunteer
-                        <Heart className="w-4 h-4 fill-white text-white" />
-                      </button>
-
-                      <button
-                        id="btn-bottom-contact"
-                        onClick={() => setIsContactOpen(true)}
-                        className="w-full sm:w-auto px-8 py-3.5 bg-gray-800 hover:bg-gray-700 text-white font-sans text-sm font-bold rounded-xl cursor-pointer border border-gray-700 transition-all flex items-center justify-center gap-2"
-                      >
-                        Inquire & Contact
-                        <ArrowRight className="w-4 h-4 text-rose-500" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* 3.5 FOOTER */}
-              <footer className="bg-gray-950 text-gray-400 px-6 py-12 border-t border-gray-900 font-sans">
-                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
-                  
-                  {/* Col 1 Brand details */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3.5 h-3.5 bg-rose-500 rounded-full shrink-0" />
-                      <h4 className="font-serif text-lg font-black text-white tracking-widest">SARTHAK</h4>
-                    </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">
-                      SARTHAK is a registered Non-Governmental Organization (NGO) delivering targeted humanitarian upliftment projects. Our mission is built around core transparency, trust, and proactive local intervention.
-                    </p>
-                    <div className="flex items-center gap-3 pt-2">
-                      <a href="#" className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center hover:bg-rose-950/45 hover:text-rose-400 transition-colors"><Facebook className="w-4 h-4" /></a>
-                      <a href="#" className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center hover:bg-rose-950/45 hover:text-rose-400 transition-colors"><Twitter className="w-4 h-4" /></a>
-                      <a href="#" className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center hover:bg-rose-950/45 hover:text-rose-400 transition-colors"><Instagram className="w-4 h-4" /></a>
-                    </div>
-                  </div>
-
-                  {/* Col 2 Quick Links */}
-                  <div className="space-y-4">
-                    <h5 className="font-sans text-xs font-extrabold text-white uppercase tracking-widest">Explore</h5>
-                    <ul className="space-y-2 text-xs">
-                      <li><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-rose-500 transition-colors">Return to Top</button></li>
-                      <li><button onClick={() => scrollToSection('goal')} className="hover:text-rose-500 transition-colors">Our Goal & Mission</button></li>
-                      <li><button onClick={() => scrollToSection('activities')} className="hover:text-rose-500 transition-colors">Activities History</button></li>
-                      <li><button onClick={() => setIsJoinOpen(true)} className="hover:text-rose-500 transition-colors">Apply as Volunteer</button></li>
-                    </ul>
-                  </div>
-
-                  {/* Col 3 Contact details */}
-                  <div className="space-y-4">
-                    <h5 className="font-sans text-xs font-extrabold text-white uppercase tracking-widest">Contact Office</h5>
-                    <ul className="space-y-2 text-xs text-gray-500">
-                      <li className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 shrink-0 text-rose-500" />
-                        <span>Pathsala, Bajali, Assam</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 shrink-0 text-rose-500" />
-                        <span>8486404182, 9365017343</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 shrink-0 text-rose-500" />
-                        <span>sarthakofficial.org@gmail.com</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                </div>
-
-                <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-gray-900 text-center text-[10px] text-gray-600 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p>© 2026 SARTHAK NGO Foundation. All Rights Reserved. Designed with care.</p>
-                  <div className="flex items-center gap-4">
-                    <a href="#" className="hover:underline">Privacy Policy</a>
-                    <a href="#" className="hover:underline">Terms of Use</a>
-                  </div>
-                </div>
-              </footer>
-
-              {/* FLOATING ACTION MODALS */}
-              <JoinModal isOpen={isJoinOpen} onClose={() => setIsJoinOpen(false)} />
-              <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
-
-            </motion.div>
-          )}
-
-        </AnimatePresence>
-      )}
-
+      {/* FOOTER */}
+      <footer className="bg-gray-950 text-gray-400 px-6 py-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div>
+            <h4 className="font-serif text-lg font-bold text-white mb-3">SARTHAK NGO</h4>
+            <p className="text-sm">Delivering targeted humanitarian upliftment projects with transparency and trust.</p>
+          </div>
+          <div>
+            <h5 className="font-bold text-white text-sm mb-3">Quick Links</h5>
+            <ul className="space-y-2 text-sm">
+              <li><button className="hover:text-rose-500">Home</button></li>
+              <li><button className="hover:text-rose-500">About</button></li>
+              <li><button className="hover:text-rose-500">Activities</button></li>
+            </ul>
+          </div>
+          <div>
+            <h5 className="font-bold text-white text-sm mb-3">Contact</h5>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Pathsala, Assam</li>
+              <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> 8486404182</li>
+              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> sarthakofficial.org@gmail.com</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-8 pt-6 border-t border-gray-900 text-center text-xs">
+          <p>© 2026 SARTHAK NGO. All Rights Reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
